@@ -49,7 +49,9 @@
 }
 
 html {
-  font-size: clamp(14px, 4vw, 16px);
+  font-size: 16px;
+  background-color: var(--surface-2); /* 追加：引っ張った時に見えてしまう下地の色をアプリの背景色と同じにする */
+  overscroll-behavior: none; /* 追加：引っ張った時のビヨーンと伸びる挙動（バウンス）を無効化 */
 }
 body {
   font-family: var(--font-sans);
@@ -57,9 +59,11 @@ body {
   color: var(--ink);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  touch-action: manipulation; /* ダブルタップズームを無効化 */
-  -webkit-user-select: none;  /* テキストの長押し選択を無効化 */
+  touch-action: pan-y; /* 変更：縦スクロールのみ許可し、横スワイプによる誤操作を無効化 */
+  -webkit-user-select: none;
   user-select: none;
+  overflow-x: hidden; /* 追加：画面全体が横に揺れてしまう現象を完全に禁止 */
+  overscroll-behavior: none; /* 追加：念のためbodyにもバウンス無効化を適用 */
 }
 /* ※入力フォーム（input）だけは文字選択・入力を許可する */
 input {
