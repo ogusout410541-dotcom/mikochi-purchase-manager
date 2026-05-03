@@ -1,0 +1,2420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>みこち代行購入マネージャー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Shippori+Mincho:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sakura:       #d4547a;
+  --sakura-light: #f5dde6;
+  --sakura-pale:  #fdf0f4;
+  --sakura-dark:  #a83660;
+  --ink:          #1a1428;
+  --ink-mid:      #3d3450;
+  --ink-soft:     #6b6280;
+  --ink-muted:    #9e97b0;
+  --surface:      #ffffff;
+  --surface-2:    #faf9fc;
+  --surface-3:    #f3f1f8;
+  --border:       #e4e0ee;
+  --border-soft:  #ede9f6;
+  --gold:         #c9922a;
+  --gold-light:   #fdf3e0;
+  --green:        #2d8a5e;
+  --green-light:  #e0f5ec;
+  --amber:        #c27b1a;
+  --amber-light:  #fff4e0;
+  --red:          #c93030;
+  --red-light:    #fde8e8;
+  --shadow-sm:    0 1px 3px rgba(26,20,40,0.08);
+  --shadow-md:    0 4px 16px rgba(26,20,40,0.10);
+  --shadow-lg:    0 8px 32px rgba(26,20,40,0.13);
+  --radius:       12px;
+  --radius-sm:    8px;
+  --radius-lg:    18px;
+  --font-sans:    "Noto Sans JP", sans-serif;
+  --font-serif:   "Shippori Mincho", serif;
+  --transition:   0.18s cubic-bezier(0.4,0,0.2,1);
+}
+
+html { font-size: 16px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--surface-2);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Phase Switcher ── */
+.phase-bar {
+  background: var(--ink);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+.phase-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 1.5rem 0 0;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+.phase-bar-logo {
+  width: 28px;
+  height: 28px;
+  background: var(--sakura);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.phase-bar-title span {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.phase-tabs { display: flex; align-items: center; gap: 0; flex: 1; }
+.phase-tab {
+  padding: 0 1.5rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  position: relative;
+  transition: color var(--transition);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.phase-tab::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--sakura);
+  border-radius: 3px 3px 0 0;
+  transform: scaleX(0);
+  transition: transform var(--transition);
+}
+.phase-tab.active { color: #fff; }
+.phase-tab.active::after { transform: scaleX(1); }
+.phase-tab:hover:not(.active) { color: rgba(255,255,255,0.7); }
+.phase-tab .tab-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), color var(--transition);
+}
+.phase-tab.active .tab-num {
+  background: var(--sakura);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════
+   PHASE PANELS
+═══════════════════════════════════════════ */
+.phase-panel { display: none; flex: 1; }
+.phase-panel.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   ── PHASE 1: PLAN ──
+═══════════════════════════════════════════ */
+#phase1 {
+  display: none;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+#phase1.active { display: block; }
+
+.plan-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 820px) {
+  .plan-layout { grid-template-columns: 1fr; }
+}
+
+/* section headers */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 18px;
+  background: var(--sakura);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Add Order Form ── */
+.add-order-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.add-order-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+.add-order-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--sakura-pale);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sakura);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.add-order-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+.form-field { margin-bottom: 0.875rem; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-bottom: 5px;
+  letter-spacing: 0.04em;
+}
+.form-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--surface-2);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--sakura);
+  box-shadow: 0 0 0 3px rgba(212,84,122,0.12);
+  background: var(--surface);
+}
+
+/* Product selector grid in form */
+.product-picker {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.product-picker-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  gap: 8px;
+  transition: background var(--transition);
+}
+.product-picker-row:last-child { border-bottom: none; }
+.product-picker-row:hover { background: var(--sakura-pale); }
+.pp-name {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+.pp-rand {
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 0.5px solid #a8dbc7;
+  flex-shrink: 0;
+}
+.pp-price {
+  font-size: 11px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 56px;
+  text-align: right;
+}
+.pp-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.pp-qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.pp-qty-btn:hover { background: var(--sakura); border-color: var(--sakura); color: #fff; }
+.pp-qty-num {
+  width: 30px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 0;
+  background: var(--surface);
+  font-family: var(--font-sans);
+}
+.pp-qty-num:focus { outline: none; border-color: var(--sakura); }
+
+/* ── Order Cards List ── */
+.orders-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.order-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
+}
+.order-card:hover { box-shadow: var(--shadow-md); }
+.order-card-head {
+  padding: 0.875rem 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-2);
+}
+.order-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--sakura);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.order-customer-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.order-total-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sakura-dark);
+  background: var(--sakura-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.order-delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1.5px solid #eee;
+  background: transparent;
+  color: #bbb;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.order-delete-btn:hover { background: var(--red-light); border-color: #f0b0b0; color: var(--red); }
+.order-edit-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1.5px solid #eee;
+  background: transparent;
+  color: #bbb;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.order-edit-btn:hover { background: #eef3ff; border-color: #b0c4f8; color: #3a6fd8; }
+
+/* ── Edit Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,20,40,0.55);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 580px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-head {
+  padding: 1.125rem 1.375rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.modal-head-icon {
+  width: 34px;
+  height: 34px;
+  background: #eef3ff;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.modal-head-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.modal-head-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.modal-head-close:hover { background: var(--red-light); border-color: #f0b0b0; color: var(--red); }
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.375rem;
+}
+.modal-foot {
+  padding: 1rem 1.375rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.modal-foot-left { font-size: 12px; color: var(--ink-muted); }
+.modal-foot-right { display: flex; gap: 8px; }
+.order-items {
+  padding: 0.625rem 1.125rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.order-item-chip {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: var(--ink-mid);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.order-item-chip .chip-qty {
+  background: var(--sakura);
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.empty-orders {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--ink-muted);
+  font-size: 13px;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+}
+.empty-orders-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+
+/* ── Summary Panel ── */
+.summary-panel {
+  position: sticky;
+  top: 68px;
+}
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.summary-head {
+  background: var(--ink);
+  color: #fff;
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.summary-head-title {
+  font-size: 13px;
+  font-weight: 700;
+  flex: 1;
+  letter-spacing: 0.04em;
+}
+.summary-order-count {
+  font-size: 11px;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.85);
+}
+.summary-items { padding: 0.5rem 0; max-height: 380px; overflow-y: auto; }
+.summary-item {
+  padding: 7px 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background var(--transition);
+}
+.summary-item:last-child { border-bottom: none; }
+.summary-item-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+.summary-item-qty {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: right;
+}
+.summary-item-subtotal {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  min-width: 64px;
+  text-align: right;
+}
+.summary-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+}
+.summary-footer {
+  border-top: 2px solid var(--border);
+  padding: 0.875rem 1.25rem;
+  background: var(--surface-2);
+}
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.summary-total-label { font-size: 12px; color: var(--ink-soft); }
+.summary-total-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--sakura-dark);
+  font-family: var(--font-serif);
+}
+.summary-items-count { font-size: 11px; color: var(--ink-muted); }
+
+/* ── Go to Phase 2 button ── */
+.start-shop-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--sakura);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  transition: all var(--transition);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 10px rgba(212,84,122,0.3);
+}
+.start-shop-btn:hover { background: var(--sakura-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,84,122,0.4); }
+.start-shop-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+.start-shop-btn .btn-arrow { font-size: 18px; }
+
+/* ═══════════════════════════════════════════
+   ── PHASE 2: SHOP ──
+═══════════════════════════════════════════ */
+#phase2 { display: none; }
+#phase2.active { display: block; }
+
+/* ── Shop Header ── */
+.shop-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  position: sticky;
+  top: 52px;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.shop-header-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.shop-progress-wrap { flex: 1; }
+.shop-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.shop-progress-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+.shop-progress-pct {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--green);
+}
+.progress-bar-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sakura), var(--sakura-dark));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.progress-bar-fill.complete { background: linear-gradient(90deg, #2d8a5e, #1d6645); }
+.shop-cost-wrap {
+  text-align: right;
+  flex-shrink: 0;
+}
+.shop-cost-label { font-size: 10px; color: var(--ink-muted); font-weight: 700; letter-spacing: 0.04em; margin-bottom: 1px; }
+.shop-cost-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  line-height: 1;
+}
+.shop-cost-val span { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+
+/* Stats row */
+.shop-stats {
+  display: flex;
+  gap: 0.75rem;
+}
+.shop-stat {
+  flex: 1;
+  background: var(--surface-3);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  text-align: center;
+  border: 1px solid var(--border-soft);
+}
+.shop-stat-val { font-size: 16px; font-weight: 900; line-height: 1; }
+.shop-stat-val.done-color { color: var(--green); }
+.shop-stat-val.partial-color { color: var(--amber); }
+.shop-stat-val.todo-color { color: var(--red); }
+.shop-stat-label { font-size: 10px; color: var(--ink-muted); font-weight: 700; margin-top: 2px; letter-spacing: 0.03em; }
+
+/* ── Filter/Sort Bar ── */
+.shop-filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 0.75rem 1.25rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-soft);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+}
+.filter-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.filter-btn:not(.active):hover { border-color: var(--ink-mid); color: var(--ink); }
+
+/* ── Product Cards (Shop Mode) ── */
+.shop-cards {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.shop-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition);
+}
+.shop-card.status-done {
+  border-color: #a8dbc7;
+  background: #f0fbf6;
+  opacity: 0.75;
+}
+.shop-card.status-partial { border-color: #f0d090; }
+.shop-card.status-todo { border-color: var(--border); }
+.shop-card.status-over { border-color: #f0a0a0; }
+
+/* Card body */
+.shop-card-body {
+  padding: 0.875rem 1rem 0.875rem 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* Status Indicator */
+.shop-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+.status-done .shop-status-dot { background: var(--green); box-shadow: 0 0 6px rgba(45,138,94,0.5); }
+.status-partial .shop-status-dot { background: var(--amber); box-shadow: 0 0 6px rgba(194,123,26,0.5); }
+.status-todo .shop-status-dot { background: #d0cce0; }
+.status-over .shop-status-dot { background: var(--red); box-shadow: 0 0 6px rgba(201,48,48,0.5); }
+
+/* Product Info */
+.shop-card-info { flex: 1; min-width: 0; }
+.shop-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 3px;
+}
+.status-done .shop-card-name { color: var(--green); }
+.shop-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.shop-price-tag {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.rand-badge {
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 0.5px solid #a8dbc7;
+}
+
+/* Qty display */
+.shop-qty-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.shop-qty-fraction {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1;
+}
+.qty-bought {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: var(--font-serif);
+  line-height: 1;
+  color: var(--ink);
+  transition: color var(--transition);
+}
+.status-done .qty-bought { color: var(--green); }
+.status-over .qty-bought { color: var(--red); }
+.qty-sep { font-size: 16px; color: var(--ink-muted); font-weight: 300; }
+.qty-needed { font-size: 16px; font-weight: 700; color: var(--ink-muted); }
+.shop-qty-label { font-size: 10px; color: var(--ink-muted); font-weight: 700; letter-spacing: 0.04em; }
+.qty-remaining-wrap {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.status-done .qty-remaining-wrap { background: var(--green-light); color: var(--green); }
+.status-partial .qty-remaining-wrap { background: var(--amber-light); color: var(--amber); }
+.status-todo .qty-remaining-wrap { background: var(--surface-3); color: var(--ink-muted); }
+.status-over .qty-remaining-wrap { background: var(--red-light); color: var(--red); }
+
+/* Card actions */
+.shop-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem 0.875rem 1.125rem;
+  padding-top: 0;
+}
+.shop-mini-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.shop-mini-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.status-done .shop-mini-fill { background: var(--green); }
+.status-partial .shop-mini-fill { background: var(--amber); }
+.status-todo .shop-mini-fill { background: #d0cce0; }
+.status-over .shop-mini-fill { background: var(--red); }
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.qty-ctrl-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+  font-family: sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.qty-ctrl-btn.minus:hover,
+.qty-ctrl-btn.minus:active { background: var(--red-light); border-color: #f0b0b0; color: var(--red); }
+.qty-ctrl-btn.plus:hover,
+.qty-ctrl-btn.plus:active { background: var(--green-light); border-color: #a8dbc7; color: var(--green); }
+.qty-ctrl-btn.full-btn {
+  width: auto;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  background: var(--sakura-pale);
+  border-color: #e8a0bb;
+  color: var(--sakura-dark);
+}
+.qty-ctrl-btn.full-btn:hover { background: var(--sakura-light); }
+.status-done .qty-ctrl-btn.full-btn {
+  background: var(--green-light);
+  border-color: #a8dbc7;
+  color: var(--green);
+}
+
+/* ── Shop Empty ── */
+.shop-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+.shop-empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
+
+/* ── Completion Screen ── */
+.complete-banner {
+  display: none;
+  background: linear-gradient(135deg, var(--green) 0%, #1d6645 100%);
+  color: #fff;
+  padding: 1.25rem 1.5rem;
+  margin: 1rem 1.25rem;
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(45,138,94,0.3);
+}
+.complete-banner.visible { display: block; }
+.complete-banner-icon { font-size: 2rem; margin-bottom: 4px; }
+.complete-banner-title { font-size: 17px; font-weight: 900; margin-bottom: 4px; }
+.complete-banner-sub { font-size: 13px; opacity: 0.85; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--surface-3); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-primary {
+  background: var(--sakura);
+  border-color: var(--sakura);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(212,84,122,0.25);
+}
+.btn-primary:hover { background: var(--sakura-dark); border-color: var(--sakura-dark); }
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-soft);
+}
+.btn-ghost:hover { background: var(--surface-3); color: var(--ink); }
+
+/* ═══════════════════════════════════════════
+   MISC UTILITIES
+═══════════════════════════════════════════ */
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.flex-row { display: flex; align-items: center; gap: 8px; }
+.flex-end { justify-content: flex-end; }
+.text-muted { color: var(--ink-muted); font-size: 12px; }
+
+/* Reset btn */
+.reset-shop-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color var(--transition);
+  margin: 0.25rem 1.25rem 1.5rem;
+}
+.reset-shop-btn:hover { color: var(--red); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ═══════════════════════════════════════════
+   ── DATA TOOLBAR ──
+═══════════════════════════════════════════ */
+.data-toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 52px;
+  z-index: 40;
+}
+.data-toolbar-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+.data-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.data-btn:hover { background: var(--surface-3); border-color: var(--ink-muted); color: var(--ink); }
+.data-btn.export-json { border-color: #b0c4f8; color: #3a6fd8; background: #eef3ff; }
+.data-btn.export-json:hover { background: #dce8ff; }
+.data-btn.export-csv  { border-color: #a8dbc7; color: var(--green); background: var(--green-light); }
+.data-btn.export-csv:hover  { background: #c5eedd; }
+.data-btn.import-btn  { border-color: var(--border); color: var(--ink-soft); }
+.data-btn.limits-btn  { border-color: #f0d090; color: var(--amber); background: var(--amber-light); }
+.data-btn.limits-btn:hover  { background: #ffe9b0; }
+#importFileInput { display: none; }
+
+/* ═══════════════════════════════════════════
+   ── PURCHASE LIMITS MODAL ──
+═══════════════════════════════════════════ */
+.limits-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,20,40,0.55);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.limits-modal-overlay.open { display: flex; }
+.limits-modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 580px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.limits-modal-body { flex:1; overflow-y:auto; padding: 0.75rem 1.375rem 1rem; }
+.limits-product-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.limits-product-row:last-child { border-bottom: none; }
+.limits-product-name {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+.limits-product-name small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-muted);
+  margin-top: 1px;
+}
+.limits-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.limits-input-wrap span { font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
+.limit-num-input {
+  width: 52px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 4px;
+  background: var(--surface-2);
+  font-family: var(--font-sans);
+}
+.limit-num-input:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(194,123,26,0.12); }
+.limits-note {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  background: var(--amber-light);
+  border: 1px solid #f0d090;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+.limits-note strong { color: var(--amber); }
+
+/* ═══════════════════════════════════════════
+   ── LOOP CALCULATION in Summary ──
+═══════════════════════════════════════════ */
+.loop-calc-section {
+  border-top: 1px solid var(--border-soft);
+  padding: 0.75rem 1.25rem;
+  background: var(--amber-light);
+  display: none;
+}
+.loop-calc-section.visible { display: block; }
+.loop-calc-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--amber);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.loop-calc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-mid);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(194,123,26,0.12);
+}
+.loop-calc-row:last-child { border-bottom: none; }
+.loop-count-badge {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--amber);
+  background: #fff;
+  border: 1.5px solid #f0d090;
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+.loop-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1.5px solid #f0d090;
+}
+.loop-total-label { font-size: 12px; font-weight: 700; color: var(--ink-mid); }
+.loop-total-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--amber);
+  font-family: var(--font-serif);
+}
+.loop-total-suffix { font-size: 12px; color: var(--ink-soft); margin-left: 2px; }
+
+/* ── Limit badge on shop card ── */
+.limit-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-light);
+  border: 1px solid #f0d090;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-top: 3px;
+}
+
+/* ── Swipe hint ── */
+.swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-muted);
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.swipe-hint.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── PHASE BAR ─── -->
+  <div class="phase-bar">
+    <div class="phase-bar-title">
+      <div class="phase-bar-logo">🌸</div>
+      <span>みこち代行購入</span>
+    </div>
+    <div class="phase-tabs">
+      <button class="phase-tab active" id="tab1" onclick="switchPhase(1)">
+        <span class="tab-num">1</span>
+        購入計画
+      </button>
+      <button class="phase-tab" id="tab2" onclick="switchPhase(2)">
+        <span class="tab-num">2</span>
+        店頭モード
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── DATA TOOLBAR ─── -->
+  <div class="data-toolbar" id="dataToolbar">
+    <span class="data-toolbar-label">🗂️ データ管理</span>
+    <button class="data-btn export-json" onclick="exportJSON()">⬇️ JSON保存</button>
+    <button class="data-btn export-csv" onclick="exportCSV()">⬇️ CSV出力</button>
+    <label class="data-btn import-btn" for="importFileInput">📂 インポート</label>
+    <input type="file" id="importFileInput" accept=".json" onchange="importData(event)">
+    <button class="data-btn limits-btn" onclick="openLimitsModal()">🔢 購入制限設定</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PHASE 1: PLAN
+  ═══════════════════════════════════════════ -->
+  <div id="phase1" class="active">
+    <div class="plan-layout">
+
+      <!-- LEFT: Orders -->
+      <div class="plan-left">
+
+        <!-- Add Order -->
+        <div class="add-order-card" id="addOrderCard">
+          <div class="add-order-header">
+            <div class="add-order-icon">➕</div>
+            <div>
+              <div class="add-order-title">注文者を追加</div>
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:1px;">お客様の名前と商品・個数を入力してください</div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">お客様名 / 備考</label>
+            <input class="form-input" id="customerName" type="text" placeholder="例：田中さん、@xxxxx" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">注文商品と個数</label>
+            <div class="product-picker" id="productPicker"></div>
+          </div>
+
+          <div class="flex-row flex-end mt12">
+            <button class="btn btn-ghost btn-sm" onclick="clearOrderForm()">クリア</button>
+            <button class="btn btn-primary" onclick="addOrder()">✓ 追加する</button>
+          </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="section-head">
+          <div class="section-title">注文リスト</div>
+          <div class="text-muted" id="orderCountLabel">0件</div>
+        </div>
+        <div class="orders-list" id="ordersList">
+          <div class="empty-orders">
+            <span class="empty-orders-icon">📋</span>
+            まだ注文者が追加されていません<br>
+            <span style="font-size:12px;">上のフォームから追加してください</span>
+          </div>
+        </div>
+
+      </div><!-- /plan-left -->
+
+      <!-- RIGHT: Summary -->
+      <div class="summary-panel">
+        <div class="summary-card">
+          <div class="summary-head">
+            <span class="summary-head-title">📦 購入集計</span>
+            <span class="summary-order-count" id="summaryOrderCount">0件の注文</span>
+          </div>
+          <div class="summary-items" id="summaryItems">
+            <div class="summary-empty">注文者を追加すると<br>集計が表示されます</div>
+          </div>
+          <div class="summary-footer">
+            <div class="summary-total-row">
+              <span class="summary-total-label">合計商品代金（目安）</span>
+              <span class="summary-total-val" id="summaryTotal">¥0</span>
+            </div>
+            <div class="summary-items-count" id="summaryItemsCount">商品種類：0種　合計：0個</div>
+            <button class="start-shop-btn" id="startShopBtn" onclick="startShopping()" disabled>
+              <span>店頭モードへ進む</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+          <!-- Loop Calculation -->
+          <div class="loop-calc-section" id="loopCalcSection">
+            <div class="loop-calc-title">🔄 並び直し（ループ）計算</div>
+            <div id="loopCalcRows"></div>
+            <div class="loop-total-row">
+              <span class="loop-total-label">最低必要ループ数</span>
+              <span><span class="loop-total-val" id="loopTotalVal">—</span><span class="loop-total-suffix">回</span></span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /summary-panel -->
+
+    </div><!-- /plan-layout -->
+  </div><!-- /phase1 -->
+
+  <!-- ═══════════════════════════════════════════
+       PHASE 2: SHOP
+  ═══════════════════════════════════════════ -->
+  <div id="phase2">
+
+    <!-- Sticky Header -->
+    <div class="shop-header">
+      <div class="shop-header-top">
+        <div class="shop-progress-wrap">
+          <div class="shop-progress-label">
+            <span class="shop-progress-text">購入進捗</span>
+            <span class="shop-progress-pct" id="shopProgressPct">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="shopProgressBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="shop-cost-wrap">
+          <div class="shop-cost-label">購入済み合計</div>
+          <div class="shop-cost-val" id="shopCostVal">¥<span id="shopCostNum">0</span></div>
+        </div>
+      </div>
+      <div class="shop-stats">
+        <div class="shop-stat">
+          <div class="shop-stat-val done-color" id="statDone">0</div>
+          <div class="shop-stat-label">✅ 完了</div>
+        </div>
+        <div class="shop-stat">
+          <div class="shop-stat-val partial-color" id="statPartial">0</div>
+          <div class="shop-stat-label">⚠️ 不足</div>
+        </div>
+        <div class="shop-stat">
+          <div class="shop-stat-val todo-color" id="statTodo">0</div>
+          <div class="shop-stat-label">❌ 未購入</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="shop-filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('todo', this)">❌ 未購入</button>
+      <button class="filter-btn" onclick="setFilter('partial', this)">⚠️ 不足</button>
+      <button class="filter-btn" onclick="setFilter('done', this)">✅ 完了</button>
+    </div>
+
+    <!-- Completion Banner -->
+    <div class="complete-banner" id="completeBanner">
+      <div class="complete-banner-icon">🎉</div>
+      <div class="complete-banner-title">全商品の購入が完了しました！</div>
+      <div class="complete-banner-sub" id="completeBannerSub"></div>
+    </div>
+
+    <!-- Shop Cards -->
+    <div class="shop-cards" id="shopCards"></div>
+
+    <!-- Reset -->
+    <button class="reset-shop-btn" onclick="resetShopProgress()">
+      ↩ 購入数をリセット
+    </button>
+
+  </div><!-- /phase2 -->
+
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════
+     PURCHASE LIMITS MODAL
+═══════════════════════════════════════════ -->
+<div class="limits-modal-overlay" id="limitsModalOverlay" onclick="handleLimitsOverlayClick(event)">
+  <div class="limits-modal" id="limitsModal">
+    <div class="modal-head">
+      <div class="modal-head-icon">🔢</div>
+      <div class="modal-head-title">購入制限（上限数）設定</div>
+      <button class="modal-head-close" onclick="closeLimitsModal()">✕</button>
+    </div>
+    <div class="limits-modal-body">
+      <div class="limits-note">
+        <strong>「お一人様◯個まで」</strong>の制限を商品ごとに設定します。<br>
+        設定すると、必要数に対して何回並び直しが必要か自動計算されます。<br>
+        <span style="color:var(--ink-soft)">0または空欄 = 制限なし</span>
+      </div>
+      <div id="limitsProductList"></div>
+    </div>
+    <div class="modal-foot">
+      <div class="modal-foot-left" style="font-size:11px;color:var(--ink-muted);">0または空欄で制限なし</div>
+      <div class="modal-foot-right">
+        <button class="btn btn-ghost" onclick="closeLimitsModal()">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveLimits()" style="background:var(--amber);border-color:var(--amber);">✓ 保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     EDIT MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="editModalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="editModal">
+    <div class="modal-head">
+      <div class="modal-head-icon">✏️</div>
+      <div class="modal-head-title" id="editModalTitle">注文内容を編集</div>
+      <button class="modal-head-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label class="form-label">お客様名 / 備考</label>
+        <input class="form-input" id="editCustomerName" type="text" placeholder="例：田中さん、@xxxxx" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">注文商品と個数</label>
+        <div class="product-picker" id="editProductPicker"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="modal-foot-left" id="editModalSubtotal">合計：¥0</div>
+      <div class="modal-foot-right">
+        <button class="btn btn-ghost" onclick="closeEditModal()">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveEdit()">✓ 変更を保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   PRODUCT MASTER （さくらみこシリーズのみ）
+═══════════════════════════════════════════ */
+const PRODUCTS = [
+  { id:0,  name:"さくらみこ 絵馬（全1種）",                                       price:1650, random:false },
+  { id:1,  name:"さくらみこ アクリルスタンド（全1種）",                           price:2200, random:false },
+  { id:2,  name:"さくらみこ キャンバスアート（全1種）",                           price:5500, random:false },
+  { id:3,  name:"さくらみこ デスクマット（全1種）",                               price:3960, random:false },
+  { id:4,  name:"さくらみこ クリアファイル（全1種）",                             price:660,  random:false },
+  { id:5,  name:"■さくらみこ アクリルスタンド 春Ver.",                           price:2200, random:false },
+  { id:6,  name:"■さくらみこ アクリルスタンド 夏Ver.",                           price:2200, random:false },
+  { id:7,  name:"さくらみこ 缶バッジ 春/夏Ver.（ランダム4種）頭身",              price:660,  random:true  },
+  { id:8,  name:"さくらみこ 缶バッジ ミニキャラ（ランダム4種）",                 price:660,  random:true  },
+  { id:9,  name:"さくらみこ アクリルスタンド ミニキャラ（ランダム4種）",         price:880,  random:true  },
+  { id:10, name:"さくらみこ 色紙（ランダム6種）",                                price:550,  random:true  },
+  { id:11, name:"■さくらみこ メタルカード 春Ver.",                              price:1100, random:false },
+  { id:12, name:"■さくらみこ メタルカード 夏Ver.",                              price:1100, random:false },
+  { id:13, name:"■さくらみこ デスクマット 春Ver.",                              price:3960, random:false },
+  { id:14, name:"■さくらみこ デスクマット 夏Ver.",                              price:3960, random:false },
+  { id:15, name:"■さくらみこ クリアファイル 春Ver.",                            price:660,  random:false },
+  { id:16, name:"■さくらみこ クリアファイル 夏Ver.",                            price:660,  random:false },
+  { id:17, name:"■さくらみこ クリアファイル ミニキャラVer.",                    price:660,  random:false },
+  { id:18, name:"さくらみこ 御朱印帳",                                           price:3300, random:false },
+  { id:19, name:"さくらみこ お守り",                                             price:1320, random:false },
+  { id:20, name:"さくらみこ 京の薄飴さん",                                       price:972,  random:false },
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let orders = [];        // [{id, name, items:{pid:qty}}]
+let shopProgress = {};  // {pid: boughtQty}
+let purchaseLimits = {}; // {pid: maxPerTransaction}
+let shopFilter = "all";
+let nextOrderId = 1;
+// Per-product temporary qty inputs for the form
+let formQtys = {};      // {pid: qty}
+let editingOrderId = null;
+let editFormQtys = {};  // {pid: qty} — used in edit modal
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function jpNum(n) { return Number(n).toLocaleString("ja-JP"); }
+
+function getAggregated() {
+  // Returns {pid: totalQty} aggregated across all orders
+  const agg = {};
+  orders.forEach(o => {
+    Object.entries(o.items).forEach(([pid, qty]) => {
+      if (qty > 0) agg[pid] = (agg[pid] || 0) + qty;
+    });
+  });
+  return agg;
+}
+
+function getStatus(pid) {
+  const agg = getAggregated();
+  const needed = agg[pid] || 0;
+  const bought = shopProgress[pid] || 0;
+  if (needed === 0) return "na";
+  if (bought === 0) return "todo";
+  if (bought >= needed) return bought > needed ? "over" : "done";
+  return "partial";
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem("mikochi_orders", JSON.stringify(orders));
+    localStorage.setItem("mikochi_progress", JSON.stringify(shopProgress));
+    localStorage.setItem("mikochi_nextId", String(nextOrderId));
+    localStorage.setItem("mikochi_limits", JSON.stringify(purchaseLimits));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const o = localStorage.getItem("mikochi_orders");
+    const p = localStorage.getItem("mikochi_progress");
+    const n = localStorage.getItem("mikochi_nextId");
+    const l = localStorage.getItem("mikochi_limits");
+    if (o) orders = JSON.parse(o);
+    if (p) shopProgress = JSON.parse(p);
+    if (n) nextOrderId = parseInt(n) || 1;
+    if (l) purchaseLimits = JSON.parse(l);
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════
+   PHASE SWITCH
+═══════════════════════════════════════════ */
+function switchPhase(n) {
+  document.getElementById("phase1").classList.toggle("active", n === 1);
+  document.getElementById("phase2").classList.toggle("active", n === 2);
+  document.getElementById("tab1").classList.toggle("active", n === 1);
+  document.getElementById("tab2").classList.toggle("active", n === 2);
+}
+
+/* ═══════════════════════════════════════════
+   PHASE 1 — ORDER MANAGEMENT
+═══════════════════════════════════════════ */
+function buildProductPicker() {
+  const container = document.getElementById("productPicker");
+  container.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const qty = formQtys[p.id] || 0;
+    const row = document.createElement("div");
+    row.className = "product-picker-row";
+    row.id = `pprow-${p.id}`;
+    row.innerHTML = `
+      <div class="pp-name">
+        ${escH(p.name)}
+        ${p.random ? '<span class="pp-rand">ランダム</span>' : ""}
+      </div>
+      <div class="pp-price">¥${jpNum(p.price)}</div>
+      <div class="pp-qty">
+        <button class="pp-qty-btn" onclick="changeFormQty(${p.id}, -1)" ${qty===0?"disabled":""}>−</button>
+        <input class="pp-qty-num" type="number" min="0" max="99"
+          value="${qty}" id="ppq-${p.id}"
+          oninput="onFormQtyInput(${p.id}, this.value)" />
+        <button class="pp-qty-btn" onclick="changeFormQty(${p.id}, 1)">＋</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function escH(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function changeFormQty(pid, delta) {
+  const cur = formQtys[pid] || 0;
+  const nv = Math.max(0, cur + delta);
+  formQtys[pid] = nv;
+  const input = document.getElementById(`ppq-${pid}`);
+  if (input) input.value = nv;
+  // Update minus button disabled state
+  const row = document.getElementById(`pprow-${pid}`);
+  if (row) {
+    const minusBtn = row.querySelector(".pp-qty-btn");
+    if (minusBtn) minusBtn.disabled = (nv === 0);
+  }
+}
+
+function onFormQtyInput(pid, val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  formQtys[pid] = n;
+  const row = document.getElementById(`pprow-${pid}`);
+  if (row) {
+    const minusBtn = row.querySelector(".pp-qty-btn");
+    if (minusBtn) minusBtn.disabled = (n === 0);
+  }
+}
+
+function clearOrderForm() {
+  document.getElementById("customerName").value = "";
+  formQtys = {};
+  buildProductPicker();
+}
+
+function addOrder() {
+  const name = document.getElementById("customerName").value.trim();
+  if (!name) {
+    document.getElementById("customerName").focus();
+    document.getElementById("customerName").style.borderColor = "var(--red)";
+    setTimeout(() => document.getElementById("customerName").style.borderColor = "", 1500);
+    return;
+  }
+  const items = {};
+  PRODUCTS.forEach(p => {
+    const qty = formQtys[p.id] || 0;
+    if (qty > 0) items[p.id] = qty;
+  });
+  if (Object.keys(items).length === 0) {
+    alert("商品を1つ以上選択してください。");
+    return;
+  }
+  orders.push({ id: nextOrderId++, name, items });
+  saveToStorage();
+  clearOrderForm();
+  renderOrdersList();
+  renderSummary();
+}
+
+function deleteOrder(id) {
+  if (!confirm("この注文者を削除しますか？")) return;
+  orders = orders.filter(o => o.id !== id);
+  saveToStorage();
+  renderOrdersList();
+  renderSummary();
+}
+
+function renderOrdersList() {
+  const el = document.getElementById("ordersList");
+  const countEl = document.getElementById("orderCountLabel");
+  countEl.textContent = `${orders.length}件`;
+
+  if (orders.length === 0) {
+    el.innerHTML = `
+      <div class="empty-orders">
+        <span class="empty-orders-icon">📋</span>
+        まだ注文者が追加されていません<br>
+        <span style="font-size:12px;">上のフォームから追加してください</span>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = orders.map(o => {
+    const chipList = Object.entries(o.items).map(([pid, qty]) => {
+      const p = PRODUCTS.find(x => x.id == pid);
+      if (!p) return "";
+      const shortName = p.name.replace(/^■/, "").replace(/（.*?）/, "").replace(/さくらみこ\s*/, "").trim();
+      return `<div class="order-item-chip">
+        <span class="chip-qty">${qty}</span>
+        <span>${escH(shortName)}</span>
+      </div>`;
+    }).join("");
+
+    const total = Object.entries(o.items).reduce((sum,[pid,qty]) => {
+      const p = PRODUCTS.find(x => x.id == pid);
+      return sum + (p ? p.price * qty : 0);
+    }, 0);
+
+    const initial = o.name.trim()[0] || "?";
+    return `
+      <div class="order-card">
+        <div class="order-card-head">
+          <div class="order-avatar">${escH(initial)}</div>
+          <div class="order-customer-name">${escH(o.name)}</div>
+          <div class="order-total-badge">¥${jpNum(total)}</div>
+          <button class="order-edit-btn" onclick="openEditModal(${o.id})" title="編集">✏️</button>
+          <button class="order-delete-btn" onclick="deleteOrder(${o.id})" title="削除">✕</button>
+        </div>
+        <div class="order-items">${chipList}</div>
+      </div>`;
+  }).join("");
+}
+
+function renderSummary() {
+  const agg = getAggregated();
+  const pids = Object.keys(agg).map(Number).filter(pid => agg[pid] > 0);
+  const totalItems = pids.reduce((s, pid) => s + agg[pid], 0);
+  const totalCost  = pids.reduce((s, pid) => {
+    const p = PRODUCTS.find(x => x.id === pid);
+    return s + (p ? p.price * agg[pid] : 0);
+  }, 0);
+
+  document.getElementById("summaryOrderCount").textContent = `${orders.length}件の注文`;
+  document.getElementById("summaryTotal").textContent = `¥${jpNum(totalCost)}`;
+  document.getElementById("summaryItemsCount").textContent =
+    `商品種類：${pids.length}種　合計：${totalItems}個`;
+
+  const startBtn = document.getElementById("startShopBtn");
+  startBtn.disabled = orders.length === 0;
+
+  const summaryEl = document.getElementById("summaryItems");
+  if (pids.length === 0) {
+    summaryEl.innerHTML = '<div class="summary-empty">注文者を追加すると<br>集計が表示されます</div>';
+    renderLoopCalc(agg, pids);
+    return;
+  }
+
+  summaryEl.innerHTML = pids.map(pid => {
+    const p = PRODUCTS.find(x => x.id === pid);
+    if (!p) return "";
+    const qty = agg[pid];
+    const subtotal = p.price * qty;
+    const lim = purchaseLimits[pid];
+    const loopStr = (lim > 0)
+      ? `<span class="limit-info-badge">上限${lim}個 → ${Math.ceil(qty/lim)}回</span>`
+      : "";
+    return `
+      <div class="summary-item">
+        <div class="summary-item-name">
+          ${escH(p.name)}${p.random ? ' <span class="rand-badge">R</span>' : ""}
+          ${loopStr}
+        </div>
+        <div class="summary-item-qty">${qty}個</div>
+        <div class="summary-item-subtotal">¥${jpNum(subtotal)}</div>
+      </div>`;
+  }).join("");
+
+  renderLoopCalc(agg, pids);
+}
+
+function renderLoopCalc(agg, pids) {
+  const section = document.getElementById("loopCalcSection");
+  const rowsEl  = document.getElementById("loopCalcRows");
+  const totalEl = document.getElementById("loopTotalVal");
+
+  // Only products that have both a need AND a limit set
+  const limited = pids.filter(pid => purchaseLimits[pid] > 0 && (agg[pid] || 0) > 0);
+
+  if (limited.length === 0) {
+    section.classList.remove("visible");
+    return;
+  }
+  section.classList.add("visible");
+
+  let maxLoops = 1;
+  rowsEl.innerHTML = limited.map(pid => {
+    const p    = PRODUCTS.find(x => x.id === pid);
+    const need = agg[pid] || 0;
+    const lim  = purchaseLimits[pid];
+    const loops = Math.ceil(need / lim);
+    if (loops > maxLoops) maxLoops = loops;
+    const shortName = p.name.replace(/^■/, "").replace(/さくらみこ\s*/, "").trim();
+    return `
+      <div class="loop-calc-row">
+        <span>${escH(shortName)}</span>
+        <span style="color:var(--ink-muted);font-size:10px;">${need}個 ÷ 上限${lim}</span>
+        <span class="loop-count-badge">${loops}回</span>
+      </div>`;
+  }).join("");
+  totalEl.textContent = maxLoops;
+}
+
+/* ═══════════════════════════════════════════
+   PHASE 2 — SHOP MODE
+═══════════════════════════════════════════ */
+function startShopping() {
+  switchPhase(2);
+  renderShopCards();
+  updateShopHeader();
+}
+
+function setFilter(f, btn) {
+  shopFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderShopCards();
+}
+
+function changeBought(pid, delta) {
+  const agg = getAggregated();
+  const needed = agg[pid] || 0;
+  const cur = shopProgress[pid] || 0;
+  const nv = Math.max(0, cur + delta);
+  shopProgress[pid] = nv;
+  saveToStorage();
+  updateShopCard(pid);
+  updateShopHeader();
+
+  // Vibration feedback: short pulse for normal, double pulse for completion
+  if (navigator.vibrate) {
+    const newStatus = getCardStatus(pid);
+    if (newStatus === "done") {
+      navigator.vibrate([40, 30, 80]); // done pattern
+    } else if (newStatus === "over") {
+      navigator.vibrate([20, 20, 20, 20, 40]); // over-limit warning
+    } else {
+      navigator.vibrate(25); // normal tap
+    }
+  }
+
+  // Re-render if filtered (card might need to move to another section)
+  if (shopFilter !== "all") {
+    renderShopCards();
+  }
+}
+
+function setFull(pid) {
+  const agg = getAggregated();
+  const needed = agg[pid] || 0;
+  const cur = shopProgress[pid] || 0;
+  // Toggle: if already done, reset to 0; else set to needed
+  shopProgress[pid] = (cur >= needed) ? 0 : needed;
+  saveToStorage();
+  updateShopCard(pid);
+  updateShopHeader();
+  if (navigator.vibrate) {
+    navigator.vibrate((cur >= needed) ? [15, 15, 15] : [50, 30, 100]);
+  }
+  if (shopFilter !== "all") renderShopCards();
+}
+
+function resetShopProgress() {
+  if (!confirm("購入数をすべてリセットしますか？")) return;
+  shopProgress = {};
+  saveToStorage();
+  renderShopCards();
+  updateShopHeader();
+}
+
+function getCardStatus(pid) {
+  const agg = getAggregated();
+  const needed = agg[pid] || 0;
+  const bought = shopProgress[pid] || 0;
+  if (needed === 0) return null;
+  if (bought === 0) return "todo";
+  if (bought > needed) return "over";
+  if (bought === needed) return "done";
+  return "partial";
+}
+
+function renderShopCards() {
+  const agg = getAggregated();
+  const pids = Object.keys(agg).map(Number).filter(pid => agg[pid] > 0);
+
+  const el = document.getElementById("shopCards");
+
+  if (pids.length === 0) {
+    el.innerHTML = `
+      <div class="shop-empty">
+        <span class="shop-empty-icon">🛒</span>
+        購入計画がありません。<br>フェーズ1で注文者を追加してください。
+      </div>`;
+    return;
+  }
+
+  // Sort: todo → partial → over → done
+  const order = { todo:0, partial:1, over:2, done:3 };
+  const sorted = pids.slice().sort((a, b) => {
+    return (order[getCardStatus(a)] ?? 99) - (order[getCardStatus(b)] ?? 99);
+  });
+
+  // Filter
+  const filtered = sorted.filter(pid => {
+    const st = getCardStatus(pid);
+    if (shopFilter === "all") return true;
+    return st === shopFilter;
+  });
+
+  if (filtered.length === 0) {
+    const labels = { todo:"未購入", partial:"不足", done:"完了" };
+    el.innerHTML = `
+      <div class="shop-empty">
+        <span class="shop-empty-icon">✅</span>
+        「${labels[shopFilter] || ""}」の商品はありません
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(pid => buildShopCardHTML(pid, agg)).join("");
+}
+
+function buildShopCardHTML(pid, agg) {
+  const p = PRODUCTS.find(x => x.id === pid);
+  if (!p) return "";
+  const needed = agg[pid];
+  const bought = shopProgress[pid] || 0;
+  const status = getCardStatus(pid);
+  const remaining = needed - bought;
+  const pct = Math.min(100, needed > 0 ? Math.round(bought / needed * 100) : 0);
+
+  const remainLabel = status === "done" ? "完了" :
+                      status === "over" ? `+${bought-needed}多い` :
+                      status === "todo" ? `残り${needed}` :
+                      `残り${remaining}`;
+
+  const fullBtnLabel = (bought >= needed) ? "↩ 戻す" : "一括完了";
+  const fullBtnTitle = (bought >= needed) ? "購入数を0にリセット" : `${needed}個に設定`;
+
+  const shortName = p.name.replace(/^■/, "").trim();
+  const lim = purchaseLimits[pid];
+  const limitBadge = (lim > 0)
+    ? `<div class="limit-info-badge">🔢 上限${lim}個/回 · ${Math.ceil(needed/lim)}回必要</div>`
+    : "";
+
+  return `
+    <div class="shop-card status-${status}" id="sc-${pid}">
+      <div class="shop-card-body">
+        <div class="shop-status-dot"></div>
+        <div class="shop-card-info">
+          <div class="shop-card-name">${escH(shortName)}</div>
+          <div class="shop-card-meta">
+            <span class="shop-price-tag">¥${jpNum(p.price)}/個</span>
+            ${p.random ? '<span class="rand-badge">ランダム</span>' : ""}
+          </div>
+          ${limitBadge}
+        </div>
+        <div class="shop-qty-display">
+          <div class="shop-qty-fraction">
+            <span class="qty-bought">${bought}</span>
+            <span class="qty-sep">/</span>
+            <span class="qty-needed">${needed}</span>
+          </div>
+          <div class="qty-remaining-wrap">${remainLabel}</div>
+          <div class="shop-qty-label">購入済 / 必要数</div>
+        </div>
+      </div>
+      <div class="shop-card-actions">
+        <div class="shop-mini-bar">
+          <div class="shop-mini-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="qty-ctrl">
+          <button class="qty-ctrl-btn minus" onclick="changeBought(${pid}, -1)" ${bought===0?"disabled":""}>−</button>
+          <button class="qty-ctrl-btn plus" onclick="changeBought(${pid}, 1)">＋</button>
+          <button class="qty-ctrl-btn full-btn" onclick="setFull(${pid})" title="${fullBtnTitle}">${fullBtnLabel}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function updateShopCard(pid) {
+  const agg = getAggregated();
+  const card = document.getElementById(`sc-${pid}`);
+  if (!card) return;
+
+  const p = PRODUCTS.find(x => x.id === pid);
+  if (!p) return;
+  const needed = agg[pid] || 0;
+  const bought = shopProgress[pid] || 0;
+  const status = getCardStatus(pid) || "todo";
+  const remaining = needed - bought;
+  const pct = Math.min(100, needed > 0 ? Math.round(bought / needed * 100) : 0);
+
+  // Update classes
+  card.className = `shop-card status-${status}`;
+
+  // Update bought number
+  const qb = card.querySelector(".qty-bought");
+  if (qb) qb.textContent = bought;
+
+  // Update remaining label
+  const rl = card.querySelector(".qty-remaining-wrap");
+  if (rl) {
+    rl.textContent = status === "done" ? "完了" :
+                     status === "over" ? `+${bought-needed}多い` :
+                     status === "todo" ? `残り${needed}` : `残り${remaining}`;
+  }
+
+  // Progress bar
+  const fill = card.querySelector(".shop-mini-fill");
+  if (fill) fill.style.width = pct + "%";
+
+  // Minus button
+  const minusBtn = card.querySelector(".qty-ctrl-btn.minus");
+  if (minusBtn) minusBtn.disabled = (bought === 0);
+
+  // Full btn label
+  const fullBtn = card.querySelector(".qty-ctrl-btn.full-btn");
+  if (fullBtn) fullBtn.textContent = (bought >= needed) ? "↩ 戻す" : "一括完了";
+}
+
+function updateShopHeader() {
+  const agg = getAggregated();
+  const pids = Object.keys(agg).map(Number).filter(pid => agg[pid] > 0);
+
+  let done=0, partial=0, todo=0, cost=0;
+  pids.forEach(pid => {
+    const st = getCardStatus(pid);
+    if (st === "done" || st === "over") done++;
+    else if (st === "partial") partial++;
+    else todo++;
+    const p = PRODUCTS.find(x => x.id === pid);
+    if (p) cost += p.price * (shopProgress[pid] || 0);
+  });
+
+  const total = pids.length;
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+
+  document.getElementById("shopProgressPct").textContent = pct + "%";
+  const bar = document.getElementById("shopProgressBar");
+  bar.style.width = pct + "%";
+  bar.className = "progress-bar-fill" + (pct === 100 ? " complete" : "");
+
+  document.getElementById("shopCostNum").textContent = jpNum(cost);
+  document.getElementById("statDone").textContent = done;
+  document.getElementById("statPartial").textContent = partial;
+  document.getElementById("statTodo").textContent = todo;
+
+  // Completion banner
+  const banner = document.getElementById("completeBanner");
+  const sub = document.getElementById("completeBannerSub");
+  if (pct === 100 && total > 0) {
+    banner.classList.add("visible");
+    sub.textContent = `${total}種類・合計¥${jpNum(cost)}の購入が完了しました！`;
+  } else {
+    banner.classList.remove("visible");
+  }
+}
+
+/* ═══════════════════════════════════════════
+   EDIT MODAL
+═══════════════════════════════════════════ */
+function openEditModal(id) {
+  const order = orders.find(o => o.id === id);
+  if (!order) return;
+  editingOrderId = id;
+
+  // Pre-fill name
+  document.getElementById("editCustomerName").value = order.name;
+
+  // Pre-fill quantities
+  editFormQtys = {};
+  PRODUCTS.forEach(p => {
+    editFormQtys[p.id] = order.items[p.id] || 0;
+  });
+
+  // Build picker
+  buildEditProductPicker();
+  updateEditSubtotal();
+
+  // Update title
+  document.getElementById("editModalTitle").textContent = `「${order.name}」の注文を編集`;
+
+  // Open modal
+  document.getElementById("editModalOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeEditModal() {
+  document.getElementById("editModalOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  editingOrderId = null;
+  editFormQtys = {};
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById("editModalOverlay")) closeEditModal();
+}
+
+function buildEditProductPicker() {
+  const container = document.getElementById("editProductPicker");
+  container.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const qty = editFormQtys[p.id] || 0;
+    const row = document.createElement("div");
+    row.className = "product-picker-row";
+    row.id = `epprow-${p.id}`;
+    row.innerHTML = `
+      <div class="pp-name">
+        ${escH(p.name)}
+        ${p.random ? '<span class="pp-rand">ランダム</span>' : ""}
+      </div>
+      <div class="pp-price">¥${jpNum(p.price)}</div>
+      <div class="pp-qty">
+        <button class="pp-qty-btn" onclick="changeEditQty(${p.id}, -1)" ${qty===0?"disabled":""}>−</button>
+        <input class="pp-qty-num" type="number" min="0" max="99"
+          value="${qty}" id="epq-${p.id}"
+          oninput="onEditQtyInput(${p.id}, this.value)" />
+        <button class="pp-qty-btn" onclick="changeEditQty(${p.id}, 1)">＋</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function changeEditQty(pid, delta) {
+  const cur = editFormQtys[pid] || 0;
+  const nv = Math.max(0, cur + delta);
+  editFormQtys[pid] = nv;
+  const input = document.getElementById(`epq-${pid}`);
+  if (input) input.value = nv;
+  const row = document.getElementById(`epprow-${pid}`);
+  if (row) {
+    const minusBtn = row.querySelector(".pp-qty-btn");
+    if (minusBtn) minusBtn.disabled = (nv === 0);
+  }
+  updateEditSubtotal();
+}
+
+function onEditQtyInput(pid, val) {
+  const n = Math.max(0, parseInt(val) || 0);
+  editFormQtys[pid] = n;
+  const row = document.getElementById(`epprow-${pid}`);
+  if (row) {
+    const minusBtn = row.querySelector(".pp-qty-btn");
+    if (minusBtn) minusBtn.disabled = (n === 0);
+  }
+  updateEditSubtotal();
+}
+
+function updateEditSubtotal() {
+  const total = PRODUCTS.reduce((sum, p) => {
+    return sum + p.price * (editFormQtys[p.id] || 0);
+  }, 0);
+  const el = document.getElementById("editModalSubtotal");
+  if (el) el.textContent = `合計：¥${jpNum(total)}`;
+}
+
+function saveEdit() {
+  if (editingOrderId === null) return;
+
+  const name = document.getElementById("editCustomerName").value.trim();
+  if (!name) {
+    const el = document.getElementById("editCustomerName");
+    el.style.borderColor = "var(--red)";
+    el.focus();
+    setTimeout(() => el.style.borderColor = "", 1500);
+    return;
+  }
+
+  const items = {};
+  PRODUCTS.forEach(p => {
+    const qty = editFormQtys[p.id] || 0;
+    if (qty > 0) items[p.id] = qty;
+  });
+  if (Object.keys(items).length === 0) {
+    alert("商品を1つ以上選択してください。");
+    return;
+  }
+
+  // Update the order in place
+  const idx = orders.findIndex(o => o.id === editingOrderId);
+  if (idx !== -1) {
+    orders[idx] = { ...orders[idx], name, items };
+  }
+
+  saveToStorage();
+  closeEditModal();
+  renderOrdersList();
+  renderSummary();
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT / IMPORT
+═══════════════════════════════════════════ */
+function exportJSON() {
+  const data = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    orders,
+    shopProgress,
+    purchaseLimits,
+    nextOrderId
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `mikochi_data_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  const agg = getAggregated();
+  const lines = [
+    "お客様名,商品名,個数,小計(円)",
+    ...orders.flatMap(o =>
+      Object.entries(o.items).map(([pid, qty]) => {
+        const p = PRODUCTS.find(x => x.id == pid);
+        const name = p ? p.name : `商品ID:${pid}`;
+        const sub  = p ? p.price * qty : 0;
+        return `"${o.name.replace(/"/g,'""')}","${name.replace(/"/g,'""')}",${qty},${sub}`;
+      })
+    ),
+    "",
+    "【集計】商品名,必要数,購入上限,ループ回数",
+    ...Object.keys(agg).map(pid => {
+      const p   = PRODUCTS.find(x => x.id == pid);
+      const nm  = p ? p.name : `商品ID:${pid}`;
+      const need = agg[pid];
+      const lim  = purchaseLimits[pid] || 0;
+      const loops = lim > 0 ? Math.ceil(need / lim) : "—";
+      return `"${nm.replace(/"/g,'""')}",${need},${lim||"制限なし"},${loops}`;
+    })
+  ];
+  const bom  = "\uFEFF";
+  const blob = new Blob([bom + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `mikochi_data_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.orders || !Array.isArray(data.orders)) throw new Error("不正なフォーマットです");
+      if (!confirm(`インポートしますか？\n現在のデータは上書きされます。\n\n注文者: ${data.orders.length}件`)) return;
+      orders         = data.orders         || [];
+      shopProgress   = data.shopProgress   || {};
+      purchaseLimits = data.purchaseLimits || {};
+      nextOrderId    = data.nextOrderId    || (orders.length > 0 ? Math.max(...orders.map(o=>o.id)) + 1 : 1);
+      saveToStorage();
+      renderOrdersList();
+      renderSummary();
+      renderShopCards();
+      updateShopHeader();
+      alert("✅ インポートが完了しました！");
+    } catch(err) {
+      alert("❌ インポートに失敗しました。\n" + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ""; // Reset so same file can be re-imported
+}
+
+/* ═══════════════════════════════════════════
+   PURCHASE LIMITS MODAL
+═══════════════════════════════════════════ */
+function openLimitsModal() {
+  buildLimitsProductList();
+  document.getElementById("limitsModalOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLimitsModal() {
+  document.getElementById("limitsModalOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function handleLimitsOverlayClick(e) {
+  if (e.target === document.getElementById("limitsModalOverlay")) closeLimitsModal();
+}
+
+function buildLimitsProductList() {
+  const container = document.getElementById("limitsProductList");
+  container.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const curLim = purchaseLimits[p.id] || "";
+    const row = document.createElement("div");
+    row.className = "limits-product-row";
+    const shortName = p.name.replace(/^■/, "").replace(/さくらみこ\s*/, "").trim();
+    row.innerHTML = `
+      <div class="limits-product-name">
+        ${escH(shortName)}
+        <small>¥${jpNum(p.price)}${p.random ? "　ランダム" : ""}</small>
+      </div>
+      <div class="limits-input-wrap">
+        <span>上限</span>
+        <input class="limit-num-input" type="number" min="0" max="99"
+          id="lim-${p.id}" value="${curLim}" placeholder="∞">
+        <span>個/回</span>
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+function saveLimits() {
+  const newLimits = {};
+  PRODUCTS.forEach(p => {
+    const el = document.getElementById(`lim-${p.id}`);
+    if (el) {
+      const v = parseInt(el.value);
+      if (v > 0) newLimits[p.id] = v;
+    }
+  });
+  purchaseLimits = newLimits;
+  saveToStorage();
+  closeLimitsModal();
+  renderSummary();
+  renderShopCards();
+}
+
+/* ═══════════════════════════════════════════
+   SWIPE TAB SWITCHING
+═══════════════════════════════════════════ */
+(function setupSwipe() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const THRESHOLD = 60;
+  const ANGLE_MAX = 0.6; // radians — only near-horizontal swipes
+
+  document.getElementById("app").addEventListener("touchstart", e => {
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  document.getElementById("app").addEventListener("touchend", e => {
+    // Don't trigger swipe when edit/limits modal is open
+    if (document.getElementById("editModalOverlay").classList.contains("open")) return;
+    if (document.getElementById("limitsModalOverlay").classList.contains("open")) return;
+
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < THRESHOLD) return;
+    if (Math.abs(dy / dx) > ANGLE_MAX) return; // too vertical
+
+    const currentPhase = document.getElementById("phase1").classList.contains("active") ? 1 : 2;
+    if (dx < 0 && currentPhase === 1) {
+      // Swipe left → go to phase 2
+      switchPhase(2);
+      if (navigator.vibrate) navigator.vibrate(20);
+    } else if (dx > 0 && currentPhase === 2) {
+      // Swipe right → go to phase 1
+      switchPhase(1);
+      if (navigator.vibrate) navigator.vibrate(20);
+    }
+  }, { passive: true });
+})();
+
+/* ═══════════════════════════════════════════
+   KEYBOARD CLOSE (both modals)
+═══════════════════════════════════════════ */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeEditModal();
+    closeLimitsModal();
+  }
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+(function init() {
+  loadFromStorage();
+  buildProductPicker();
+  renderOrdersList();
+  renderSummary();
+  renderShopCards();
+  updateShopHeader();
+})();
+</script>
+</body>
+</html>
