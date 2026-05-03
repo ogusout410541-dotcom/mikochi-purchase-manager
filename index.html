@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
 <title>みこち代行購入マネージャー</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="みこち代行">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Shippori+Mincho:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -54,6 +57,14 @@ body {
   color: var(--ink);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation; /* ダブルタップズームを無効化 */
+  -webkit-user-select: none;  /* テキストの長押し選択を無効化 */
+  user-select: none;
+}
+/* ※入力フォーム（input）だけは文字選択・入力を許可する */
+input {
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 
 /* ═══════════════════════════════════════════
